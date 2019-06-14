@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration status="OFF">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <RollingFile name="alarmLog" fileName="logs/storm-alarm-core.log"
+                     filePattern="logs/$${date:yyyy-MM}/storm-alarm-core-%d{yyyy-MM-dd}-%i.log">
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1M"/>
+            </Policies>
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%p] - %l - %m%n"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <logger name="com.bc" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="alarmLog"/>
+        </logger>
+    </Loggers>
+</Configuration>
