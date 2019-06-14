@@ -37,9 +37,9 @@ public class NginxAccessLogTopology {
         String topic = "nginx_access_log";
         String zkRoot = "/brokers";
         String spoutId = "KafkaSpout";
-        String brokerZkStr = "49.4.68.207:2181";
+        String brokerZkStr = "192.168.0.2:2181";
         int zkPort = 2181;
-        String[] zkServers = new String[]{"49.4.68.207"};
+        String[] zkServers = new String[]{"192.168.0.2"};
 
 
         BrokerHosts hosts = new ZkHosts(brokerZkStr);
