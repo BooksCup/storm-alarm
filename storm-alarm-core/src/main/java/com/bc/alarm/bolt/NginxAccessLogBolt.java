@@ -4,7 +4,7 @@ package com.bc.alarm.bolt;
 import com.alibaba.fastjson.JSONObject;
 import com.bc.alarm.cons.Constant;
 import com.bc.alarm.entity.NginxAccessLog;
-import com.bc.alarm.utils.MongoDBUtils;
+import com.bc.alarm.utils.MongoDbUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.storm.task.OutputCollector;
@@ -41,7 +41,7 @@ public class NginxAccessLogBolt extends BaseRichBolt {
             NginxAccessLog nginxAccessLog = JSONObject.parseObject(singleLog, NginxAccessLog.class);
             logger.info("nginxAccessLog: " + nginxAccessLog);
 
-            MongoDBUtils.getInstance().insertOne(Constant.COLLECTION_NAME_NGINX_ACCESS_LOG, nginxAccessLog);
+            MongoDbUtils.getInstance().insertOne(Constant.COLLECTION_NAME_NGINX_ACCESS_LOG, nginxAccessLog);
 
             // 确认成功处理一个tuple
             collector.ack(tuple);

@@ -20,17 +20,17 @@ import java.util.List;
  *
  * @author zhou
  */
-public class MongoDBUtils {
+public class MongoDbUtils {
 
     /**
      * 日志
      */
-    private static final Log logger = LogFactory.getLog(MongoDBUtils.class);
+    private static final Log logger = LogFactory.getLog(MongoDbUtils.class);
 
     MongoClient mongoClient;
     MongoDatabase mongoDatabase;
 
-    private MongoDBUtils() {
+    private MongoDbUtils() {
         String host = ConfigUtils.getProperty("host", "");
         int port = Integer.valueOf(ConfigUtils.getProperty("port", "27017"));
         String database = ConfigUtils.getProperty("database", "");
@@ -56,19 +56,26 @@ public class MongoDBUtils {
         mongoDatabase = mongoClient.getDatabase(database);
     }
 
-    private volatile static MongoDBUtils instance = null;
+    private volatile static MongoDbUtils instance = null;
 
-    public static MongoDBUtils getInstance() {
+    public static MongoDbUtils getInstance() {
         if (null == instance) {
-            synchronized (MongoDBUtils.class) {
+            synchronized (MongoDbUtils.class) {
                 if (null == instance) {
-                    instance = new MongoDBUtils();
+                    instance = new MongoDbUtils();
                 }
             }
         }
         return instance;
     }
 
+    /**
+     * 插入单个对象
+     *
+     * @param collectionName 集合名
+     * @param object         对象
+     * @param <T>            泛型
+     */
     public <T> void insertOne(String collectionName, T object) {
         MongoCollection<Document> collection = mongoDatabase.getCollection(collectionName);
         try {
@@ -82,6 +89,13 @@ public class MongoDBUtils {
         }
     }
 
+    /**
+     * 批量插入对象
+     *
+     * @param collectionName 集合名
+     * @param objectList     对象列表
+     * @param <T>            泛型
+     */
     public <T> void insertMany(String collectionName, List<T> objectList) {
         MongoCollection<Document> collection = mongoDatabase.getCollection(collectionName);
         try {
@@ -92,9 +106,17 @@ public class MongoDBUtils {
         }
     }
 
-    public long updateOne(String collectionName, Bson bson, Object obj) {
+    /**
+     * 修改单个对象
+     *
+     * @param collectionName 集合名
+     * @param filter         查询过滤
+     * @param obj            修改后的对象
+     * @return 修改文档数
+     */
+    public long updateOne(String collectionName, Bson filter, Object obj) {
         try {
-            UpdateResult result = mongoDatabase.getCollection(collectionName).updateOne(bson,
+            UpdateResult result = mongoDatabase.getCollection(collectionName).updateOne(filter,
                     new Document("$set", BsonUtil.toBson(obj)));
             return result.getMatchedCount();
         } catch (IllegalArgumentException e) {
@@ -111,27 +133,56 @@ public class MongoDBUtils {
         return 0;
     }
 
-    public <T> List<T> find(String collectionName, Bson bson, Class<T> clazz) {
-        FindIterable<Document> doIterable = mongoDatabase.getCollection(collectionName).find(bson);
+    /**
+     * 查询数据
+     *
+     * @param collectionName 集合名
+     * @param filter         查询过滤
+     * @param clazz          clazz
+     * @param <T>            泛型
+     * @return 查询出的数据列表
+     */
+    public <T> List<T> find(String collectionName, Bson filter, Class<T> clazz) {
+        FindIterable<Document> doIterable = mongoDatabase.getCollection(collectionName).find(filter);
         MongoCursor<Document> cursor = doIterable.iterator();
         List<T> objects = docListToBeanList(cursor, clazz);
         return objects;
     }
 
-    public <T> List<T> find(String collectionName, Bson query, Class<T> clazz, Bson sort,
+    /**
+     * 查询数据
+     *
+     * @param collectionName 集合名
+     * @param filter         查询过滤
+     * @param clazz          clazz
+     * @param sort           排序条件
+     * @param pageNum        当前页数
+     * @param pageSize       分页大小
+     * @param <T>            泛型
+     * @return 查询出的数据列表
+     */
+    public <T> List<T> find(String collectionName, Bson filter, Class<T> clazz, Bson sort,
                             Integer pageNum, Integer pageSize) {
         pageNum = (null == pageNum || 0 == pageNum) ? 1 : pageNum;
         pageSize = (null == pageSize || 0 == pageSize) ? 1 : pageSize;
         sort = null == sort ? new BasicDBObject() : sort;
         int skip = (pageNum - 1) * pageSize;
 
-        FindIterable<Document> doIterable = mongoDatabase.getCollection(collectionName).find(query).
+        FindIterable<Document> doIterable = mongoDatabase.getCollection(collectionName).find(filter).
                 sort(sort).limit(pageSize).skip(skip);
         MongoCursor<Document> cursor = doIterable.iterator();
         List<T> objects = docListToBeanList(cursor, clazz);
         return objects;
     }
 
+    /**
+     * 文档列表转成对象列表
+     *
+     * @param cursor Mongo游标
+     * @param clazz  clazz
+     * @param <T>    泛型
+     * @return 对象列表
+     */
     private <T> List<T> docListToBeanList(MongoCursor<Document> cursor, Class<T> clazz) {
         List<T> objects = new ArrayList<>();
         while (cursor.hasNext()) {
@@ -145,6 +196,13 @@ public class MongoDBUtils {
         return objects;
     }
 
+    /**
+     * 对象列表转成文档列表
+     *
+     * @param beanList 对象列表
+     * @param <T>      泛型
+     * @return 文档列表
+     */
     private <T> List<Document> beanListToDocList(List<T> beanList) {
         List<Document> documents = new ArrayList<>();
         try {
@@ -158,11 +216,23 @@ public class MongoDBUtils {
         return documents;
     }
 
-
-    public long count(String collectionName, Bson query) {
-        return mongoDatabase.getCollection(collectionName).count(query);
+    /**
+     * 查询文档数量
+     *
+     * @param collectionName 集合名
+     * @param filter         查询过滤
+     * @return 集合内符合查询条件的文档数量
+     */
+    public long count(String collectionName, Bson filter) {
+        return mongoDatabase.getCollection(collectionName).count(filter);
     }
 
+    /**
+     * 查询文档数量
+     *
+     * @param collectionName 集合名
+     * @return 集合内所有文档的数量
+     */
     public long count(String collectionName) {
         return mongoDatabase.getCollection(collectionName).count();
     }
