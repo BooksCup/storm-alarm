@@ -36,7 +36,7 @@ public class NginxAccessLogBolt extends BaseRichBolt {
     public void execute(Tuple tuple) {
         try {
             String singleLog = tuple.getString(0);
-            logger.info("===> singleLog: " + singleLog);
+            logger.info("singleLog: " + singleLog);
 
             NginxAccessLog nginxAccessLog = JSONObject.parseObject(singleLog, NginxAccessLog.class);
             logger.info("nginxAccessLog: " + nginxAccessLog);

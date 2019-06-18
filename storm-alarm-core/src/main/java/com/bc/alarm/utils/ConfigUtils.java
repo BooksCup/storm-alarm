@@ -25,6 +25,16 @@ public class ConfigUtils {
         return defaultValue;
     }
 
+    public static Boolean getBooleanProperty(String key, Boolean defaultValue) {
+        Properties properties = getProperties();
+        String value = properties.getProperty(key);
+
+        if (null != value) {
+            return Boolean.valueOf(value.trim());
+        }
+        return defaultValue;
+    }
+
     public static Properties getProperties() {
         if (null == PROPERTIES) {
             synchronized (ConfigUtils.class) {

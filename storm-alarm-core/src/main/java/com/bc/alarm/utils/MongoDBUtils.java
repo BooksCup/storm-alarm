@@ -6,6 +6,8 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.*;
 import com.mongodb.client.result.UpdateResult;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -19,6 +21,12 @@ import java.util.List;
  * @author zhou
  */
 public class MongoDBUtils {
+
+    /**
+     * 日志
+     */
+    private static final Log logger = LogFactory.getLog(MongoDBUtils.class);
+
     MongoClient mongoClient;
     MongoDatabase mongoDatabase;
 
@@ -28,15 +36,23 @@ public class MongoDBUtils {
         String database = ConfigUtils.getProperty("database", "");
         String userName = ConfigUtils.getProperty("userName", "");
         String password = ConfigUtils.getProperty("password", "");
+        Boolean auth = ConfigUtils.getBooleanProperty("auth", false);
+        logger.info("MongoDb auth: " + auth);
 
         List<ServerAddress> serverAddrList = new ArrayList<>();
         ServerAddress serverAddress = new ServerAddress(host, port);
         serverAddrList.add(serverAddress);
-//        List<MongoCredential> credentialList = new ArrayList<>();
-//        MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
-//        credentialList.add(credential);
-//        mongoClient = new MongoClient(serverAddrList, credentialList);
-        mongoClient = new MongoClient(serverAddrList);
+
+        if (auth) {
+            // 开启认证
+            List<MongoCredential> credentialList = new ArrayList<>();
+            MongoCredential credential = MongoCredential.createCredential(userName, database, password.toCharArray());
+            credentialList.add(credential);
+            mongoClient = new MongoClient(serverAddrList, credentialList);
+        } else {
+
+            mongoClient = new MongoClient(serverAddrList);
+        }
         mongoDatabase = mongoClient.getDatabase(database);
     }
 
