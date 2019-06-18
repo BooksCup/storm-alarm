@@ -1,6 +1,8 @@
 package com.bc.alarm.bolt;
 
 
+import com.alibaba.fastjson.JSONObject;
+import com.bc.alarm.entity.NginxAccessLog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.storm.task.OutputCollector;
@@ -33,6 +35,9 @@ public class NginxAccessLogBolt extends BaseRichBolt {
         try {
             String singleLog = tuple.getString(0);
             logger.info("===> singleLog: " + singleLog);
+
+            NginxAccessLog nginxAccessLog = JSONObject.parseObject(singleLog, NginxAccessLog.class);
+            logger.info("nginxAccessLog: " + nginxAccessLog);
 
             // 确认成功处理一个tuple
             collector.ack(tuple);
