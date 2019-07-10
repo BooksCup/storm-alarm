@@ -32,6 +32,11 @@ public class NginxAccessLogBolt extends BaseRichBolt {
 
     OutputCollector collector;
 
+    /**
+     * 处理输入的单个元组
+     *
+     * @param tuple 元组
+     */
     @Override
     public void execute(Tuple tuple) {
         try {
